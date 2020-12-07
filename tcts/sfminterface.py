@@ -8,6 +8,7 @@ import os
 import sys
 import shutil
 import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 DEFAULT_DEPTH_ENABLE = True
 DEFAULT_POSE_ENABLE = False
@@ -16,16 +17,7 @@ SFM_REPOSITORY_URL = 'https://github.com/labrat97/SfMLearner-Tensorflow2.git'
 SFM_REPOSITORY_PATH = os.path.dirname(__file__) + os.sep + 'sfm'
 SFM_DEPTH_DOWNLOAD_SCRIPT = SFM_REPOSITORY_PATH + os.sep + 'models' + os.sep + 'download_depth_model.sh'
 SFM_POSE_DOWNLOAD_SCRIPT = SFM_REPOSITORY_PATH + os.sep + 'models' + os.sep + 'download_pose_model.sh'
-# TODO - Clean this, it's a little messy in terms of the runtime
-sys.path.append(os.path.dirname(__file__))
-sys.path.append(SFM_REPOSITORY_PATH)
-if not libraryDownloaded(): 
-    downloadLibrary()
-from sfm.SfMLearner import SfMLearner
 
-SFM_DEFAULT_DEPTH_MODEL = SFM_REPOSITORY_PATH + os.sep + 'models/model-190532'
-SFM_DEFAULT_IMG_HEIGHT = 128
-SFM_DEFAULT_IMG_WIDTH = 416
 
 def libraryDownloaded():
     try:
@@ -53,6 +45,16 @@ def downloadLibrary(downloadDepth=DEFAULT_DEPTH_ENABLE, downloadPose=DEFAULT_POS
         os.chdir(cwd)
     
     return repoClone
+
+sys.path.append(os.path.dirname(__file__))
+sys.path.append(SFM_REPOSITORY_PATH)
+if not libraryDownloaded(): 
+    downloadLibrary()
+from sfm.SfMLearner import SfMLearner
+SFM_DEFAULT_DEPTH_MODEL = SFM_REPOSITORY_PATH+os.sep+'models/model-190532'
+SFM_DEFAULT_IMG_HEIGHT = 128
+SFM_DEFAULT_IMG_WIDTH = 416
+
 
 def load(path=None, loadDepth=DEFAULT_DEPTH_ENABLE, loadPose=DEFAULT_POSE_ENABLE):
     # Running data

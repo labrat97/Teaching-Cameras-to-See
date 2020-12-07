@@ -29,6 +29,7 @@ def rawWeightsAvailable():
 def downloadPretrainedWeights():
     wget.download(YOLO_PRETRAINED_WEIGHT_URL, 
         out=YOLO_PRETRAINED_WEIGHT_PATH+os.sep+YOLO_PRETRAINED_FILENAME_RAW)
+    print()
 
 def libraryDownloaded():
     try:
@@ -57,7 +58,7 @@ import yololib.yolov3_tf2.models
 from yololib import yolov3_tf2 as yolov3
 from yololib.yolov3_tf2.utils import load_darknet_weights
 
-def load(classCount, weights=None, tiny=YOLO_TINY_ENABLE, pretrained=False):
+def load(classCount, weights=None, tiny=YOLO_TINY_ENABLE):
     # If available, setup GPU memory
     tfDevices = tf.config.experimental.list_physical_devices('GPU')
     if len(tfDevices) > 0:
@@ -69,13 +70,19 @@ def load(classCount, weights=None, tiny=YOLO_TINY_ENABLE, pretrained=False):
         yolo = yolov3.models.YoloV3Tiny(channels=4, classes=classCount, training=True)
     else:
         yolo = yolov3.models.YoloV3(channels=4, classes=classCount, training=True)
-        
 
-    # Get the pretrained weights
-    if pretrained:
+    # Get the pretrained weights if needed
+    if weights is None:
+        # Load the darknet weights
         if not rawWeightsAvailable():
             downloadPretrainedWeights()
-    load_darknet_weights(yolo, YOLO_PRETRAINED_WEIGHT_PATH+os.sep+YOLO_PRETRAINED_FILENAME_RAW, tiny=YOLO_TINY_ENABLE)
+        load_darknet_weights(yolo, YOLO_PRETRAINED_WEIGHT_PATH+os.sep+YOLO_PRETRAINED_FILENAME_RAW, \
+            tiny=YOLO_TINY_ENABLE)
+    # Load from the weights provided
+    else:
+        yolo.load_weights(weights).expect_partial()
+
+    return yolo
 
 def evaluate(image):
     print("Not yet implemented.")

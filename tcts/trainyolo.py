@@ -3,9 +3,12 @@ import sys
 import cv2
 import argparse
 
+import sfminterface as sfmint
 import yolointerface as yoloint
 import numpy as np
 import tensorflow as tf
+
+
 
 def main():
     parser = argparse.ArgumentParser(description='Trains the terminal YOLOv3 network' +\
@@ -22,8 +25,8 @@ def main():
         help='The previous trained version of the YOLO network.')
     args = parser.parse_args()
 
-    yoloint.load(8, pretrained=True)
-    
+    sfmSession, depthModel, _ = sfmint.load(loadPose=False)
+    yolo = yoloint.load(classCount=8)
 
 if __name__=='__main__':
     main()
