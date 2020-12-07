@@ -19,6 +19,8 @@ SFM_POSE_DOWNLOAD_SCRIPT = SFM_REPOSITORY_PATH + os.sep + 'models' + os.sep + 'd
 # TODO - Clean this, it's a little messy in terms of the runtime
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(SFM_REPOSITORY_PATH)
+if not libraryDownloaded(): 
+    downloadLibrary()
 from sfm.SfMLearner import SfMLearner
 
 SFM_DEFAULT_DEPTH_MODEL = SFM_REPOSITORY_PATH + os.sep + 'models/model-190532'
@@ -29,7 +31,7 @@ def libraryDownloaded():
     try:
         _ = git.Repo(SFM_REPOSITORY_PATH).git_dir
         return True
-    except git.InvalidGitRepositoryError:
+    except git.exc.NoSuchPathError or git.InvalidGitRepositoryError:
         return False
 
 def downloadLibrary(downloadDepth=DEFAULT_DEPTH_ENABLE, downloadPose=DEFAULT_POSE_ENABLE):
@@ -37,7 +39,7 @@ def downloadLibrary(downloadDepth=DEFAULT_DEPTH_ENABLE, downloadPose=DEFAULT_POS
     if libraryDownloaded():
         shutil.rmtree(SFM_REPOSITORY_PATH)
     repoClone = git.Repo.clone_from(SFM_REPOSITORY_URL, SFM_REPOSITORY_PATH)
-    
+
     # Download the depth and pose models optionally
     if downloadDepth or downloadPose:
         cwd = os.getcwd()
