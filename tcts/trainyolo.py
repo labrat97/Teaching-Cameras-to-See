@@ -8,8 +8,9 @@ import sfminterface as sfmint
 import yolointerface as yoloint
 import numpy as np
 import tensorflow as tf
-
 import tensorflow_datasets as tfds
+
+# TODO - Make a callback function
 
 def main():
     # Parse arguments
@@ -34,7 +35,6 @@ def main():
     # Load KITTI dataset
     (ds_train, ds_val, ds_test), ds_info = tfds.load('kitti', split=['train', \
         'validation', 'test'], shuffle_files=True, with_info=True)
-    print(ds_info)
 
 if __name__=='__main__':
     main()
