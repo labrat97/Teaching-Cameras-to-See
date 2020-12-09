@@ -73,6 +73,8 @@ def load(classCount, weights=None, tiny=YOLO_TINY_ENABLE):
         else:
             yolo = yolov3.models.YoloV3(channels=4, classes=classCount, training=True)
 
+        # TODO - Figure out what the anchors are for
+
         # Get the pretrained weights if needed
         if weights is None:
             # Load the darknet weights

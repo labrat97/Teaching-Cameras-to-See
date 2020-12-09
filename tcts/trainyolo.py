@@ -29,6 +29,21 @@ def deepenDataframe(sfmSession, depthNetwork, dataframe):
     dataframe['image'] = images
     return dataframe
 
+def loadDataset(sfmSession, depthNetwork):
+    # Static load of KITTI dataset for now
+    # Load KITTI dataset
+    dataset, dsInfo = tfds.load('kitti', split=['train', \
+        'validation', 'test'], shuffle_files=False, download=True, with_info=True)
+    dataframe = []
+    for i in range(len(dataset)): dataframe.append(tfds.as_dataframe(dataset[i], dsInfo))
+    print('Dataset loaded...')
+
+    # Add depth channel and resize images
+    for i in range(len(dataset)):
+        dataframe[i] = deepenDataframe(sfmSession, depthModel, dataframe[i])
+        print(str(i+1) + '/' + str(len(dataset)) + ' frames converted...')
+    
+    return dataframe
 
 def main():
     # Parse arguments
@@ -46,27 +61,22 @@ def main():
         help='The previous trained version of the YOLO network.')
     args = parser.parse_args()
 
-    # Load networks
+    # Load networks and data
     sfmSession, depthModel, _ = sfmint.load(loadPose=False)
     print('Depth model loaded...')
 
     yoloSession, yolo = yoloint.load(classCount=8)
     print('YOLOv3 model loaded...')
 
-    # Load KITTI dataset
-    dataset, dsInfo = tfds.load('kitti', split=['train', \
-        'validation', 'test'], shuffle_files=False, download=True, with_info=True)
-    dataframe = []
-    for i in range(len(dataset)): dataframe.append(tfds.as_dataframe(dataset[i], dsInfo))
-    print('Dataset loaded...')
-
-    for i in range(len(dataset)):
-        dataframe[i] = deepenDataframe(sfmSession, depthModel, dataframe[i])
-        print(str(i+1) + '/' + str(len(dataset)) + ' frames converted...')
-    (dsTrain, dsVal, dsTest) = dataframe
-    print('Dataset modified...')
+    (dsTrain, dsVal, dsTest) = loadDataset(sfmSession, depthModel)
+    print('Dataset modified and loaded...')
     
-    return (dsTrain, dsVal, dsTest), dsInfo, sfmSession, depthModel, yolo
+    # Freeze the appropriate layers for transfer learning
+    yolo.get_layer('yolo_darknet').set_weights(
+        model_pretrained.get_layer('yolo_darknet').get_weights())
+        freeze_all(yolo.get_layer('yolo_darknet'))
+
+    return (dsTrain, dsVal, dsTest), sfmSession, depthModel, yolo
 
 if __name__=='__main__':
     main()
