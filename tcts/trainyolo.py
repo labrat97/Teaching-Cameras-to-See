@@ -15,15 +15,17 @@ def deepenDataframe(sfmSession, depthNetwork, dataframe):
     images = dataframe['image']
 
     for i in range(len(images)):
+        if i != 0 and i % 100 == 0: 
+            print(str(i) + '/' + str(len(images)) + ' images deepened...')
+
         image = pil.Image.fromarray(images[i])
         image = image.resize((sfmint.SFM_DEFAULT_IMG_WIDTH, sfmint.SFM_DEFAULT_IMG_HEIGHT), pil.Image.ANTIALIAS)
         image = np.array(image).reshape(1, sfmint.SFM_DEFAULT_IMG_HEIGHT, sfmint.SFM_DEFAULT_IMG_WIDTH, 3)
 
         depth = depthNetwork.inference(image, sfmSession, mode='depth')['depth']
         images[i] = np.concatenate((image, depth), axis=3)
-
-        if i % 100 == 0: print(str(i) + '/' + str(len(images)) + ' images deepened...')
-    
+    if len(images) % 100 != 0: 
+        print(str(len(images)) + '/' + str(len(images)) + 'images deepened...')
     dataframe['image'] = images
     return dataframe
 
@@ -60,6 +62,7 @@ def main():
 
     for i in range(len(dataset)):
         dataframe[i] = deepenDataframe(sfmSession, depthModel, dataframe[i])
+        print(str(i+1) + '/' + str(len(dataset)) + ' frames converted...')
     (dsTrain, dsVal, dsTest) = dataframe
     print('Dataset modified...')
     
