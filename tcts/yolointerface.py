@@ -65,24 +65,26 @@ def load(classCount, weights=None, tiny=YOLO_TINY_ENABLE):
         tf.config.experimental.set_memory_growth(tfDevices[0], True)
     
     # Open the network
-    yolo = None
-    if tiny:
-        yolo = yolov3.models.YoloV3Tiny(channels=4, classes=classCount, training=True)
-    else:
-        yolo = yolov3.models.YoloV3(channels=4, classes=classCount, training=True)
+    session = tf.compat.v1.Session()
+    with session.as_default():
+        yolo = None
+        if tiny:
+            yolo = yolov3.models.YoloV3Tiny(channels=4, classes=classCount, training=True)
+        else:
+            yolo = yolov3.models.YoloV3(channels=4, classes=classCount, training=True)
 
-    # Get the pretrained weights if needed
-    if weights is None:
-        # Load the darknet weights
-        if not rawWeightsAvailable():
-            downloadPretrainedWeights()
-        load_darknet_weights(yolo, YOLO_PRETRAINED_WEIGHT_PATH+os.sep+YOLO_PRETRAINED_FILENAME_RAW, \
-            tiny=YOLO_TINY_ENABLE)
-    # Load from the weights provided
-    else:
-        yolo.load_weights(weights).expect_partial()
+        # Get the pretrained weights if needed
+        if weights is None:
+            # Load the darknet weights
+            if not rawWeightsAvailable():
+                downloadPretrainedWeights()
+            load_darknet_weights(yolo, YOLO_PRETRAINED_WEIGHT_PATH+os.sep+YOLO_PRETRAINED_FILENAME_RAW, \
+                tiny=YOLO_TINY_ENABLE)
+        # Load from the weights provided
+        else:
+            yolo.load_weights(weights).expect_partial()
 
-    return yolo
+    return session, yolo
 
 def evaluate(image):
     print("Not yet implemented.")

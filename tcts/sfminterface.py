@@ -85,7 +85,8 @@ def load(path=None, loadDepth=DEFAULT_DEPTH_ENABLE, loadPose=DEFAULT_POSE_ENABLE
     # Open session and export for use with sfm.interface()
     saver = tf.train.Saver([var for var in tf.model_variables()])
     session = tf.Session()
-    saver.restore(session, path)
+    with session.as_default():
+        saver.restore(session, path)
     
     return session, depthModel, poseModel
 
